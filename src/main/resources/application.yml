@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: zzc040130Dog
+    url: jdbc:mysql://127.0.0.1:3306/EcommerceDB?characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+logging:
+  pattern:
+    console: "[%thread] %-5level %logger{36} - %msg%n"
