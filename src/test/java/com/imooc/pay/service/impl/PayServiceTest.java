@@ -18,5 +18,7 @@ public class PayServiceTest extends PayApplicationTests{
 //        BigDecimal.valueOf(0.01)
 //        new BigDecimal("0.01");
         payService.create("12551667891446", BigDecimal.valueOf(0.01));
+
     }
+
 }
