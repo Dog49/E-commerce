@@ -26,8 +26,7 @@ public class PayService implements IPayService {
         wxPayConfig.setAppId("wxd898fcb01713c658");
         wxPayConfig.setMchId("1483469312");
         wxPayConfig.setMchKey("7mdApPMfXddfWWbbP4DUaVYm2wjyh3v3");
-        wxPayConfig.setNotifyUrl("http://127.0.0.1");
-
+        wxPayConfig.setNotifyUrl("http://ggq657.natappfree.cc");
         BestPayServiceImpl bestPayService = new BestPayServiceImpl();
         bestPayService.setWxPayConfig(wxPayConfig);
 
