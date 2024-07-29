@@ -12,4 +12,11 @@ public interface IPayService {
      * Create a new pay order
      */
     PayResponse create (String orderId, BigDecimal amount);
+
+    /*
+    * Async Notify
+    * @param notifyData
+    *
+    */
+    void asyncNotify (String notifyData);
 }
