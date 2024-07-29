@@ -17,7 +17,7 @@ public class BestPayConfig {
         wxPayConfig.setMchId("1483469312");
         wxPayConfig.setMchKey("7mdApPMfXddfWWbbP4DUaVYm2wjyh3v3");
 
-        wxPayConfig.setNotifyUrl("http://127.0.0.1:8080");
+        wxPayConfig.setNotifyUrl("http://dog49.natapp1.cc/pay/notify");
 
         BestPayServiceImpl bestPayService = new BestPayServiceImpl();
         bestPayService.setWxPayConfig(wxPayConfig);

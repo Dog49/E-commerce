@@ -36,6 +36,7 @@ public class PayController {
     @PostMapping("/notify")
     public void asyncNotify(@RequestBody String notifyData) {
 //        receive the notification from alipay like pay completed
-        log.info("notifyData={}", notifyData);
+        payService.asyncNotify(notifyData);
+
     }
 }
