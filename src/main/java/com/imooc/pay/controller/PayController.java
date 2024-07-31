@@ -5,10 +5,7 @@ import com.lly835.bestpay.model.PayResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.math.BigDecimal;
@@ -34,9 +31,9 @@ public class PayController {
 
     }
     @PostMapping("/notify")
-    public void asyncNotify(@RequestBody String notifyData) {
+    @ResponseBody
+    public String asyncNotify(@RequestBody String notifyData) {
 //        receive the notification from alipay like pay completed
-        payService.asyncNotify(notifyData);
-
+        return payService.asyncNotify(notifyData);
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.imooc.pay.config.BestPayConfig;
 
+
 import java.math.BigDecimal;
 
 @Slf4j
@@ -45,9 +46,20 @@ public class PayService implements IPayService {
     * @param NotifyData
     * */
     @Override
-    public void asyncNotify(String notifyData) {
-//        1. 签名校验
+    public String asyncNotify(String notifyData) {
+        //1. 签名校验
         PayResponse payResponse= bestPayService.asyncNotify(notifyData);
         log.info("payResponse={}",payResponse);
+
+        //2.金额校验（从数据库查订单）
+
+        //3. 修改订单支付状态
+
+        //4.告诉微信不要再通知了
+        return "<xml>\n" +
+                "  <return_code><![CDATA[SUCCESS]]></return_code>\n" +
+                "  <return_msg><![CDATA[OK]]></return_msg>\n" +
+                "</xml>";
+
     }
 }
