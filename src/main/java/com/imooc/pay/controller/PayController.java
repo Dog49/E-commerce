@@ -1,6 +1,7 @@
 package com.imooc.pay.controller;
 
 import com.imooc.pay.service.impl.PayService;
+import com.lly835.bestpay.enums.BestPayTypeEnum;
 import com.lly835.bestpay.model.PayResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +23,23 @@ public class PayController {
     private PayService payService;
     @RequestMapping("/create")
     public ModelAndView create(@RequestParam("orderId") String orderId,
-                               @RequestParam("amount") BigDecimal amount) {
-        PayResponse response = payService.create(orderId, amount);
+                               @RequestParam("amount") BigDecimal amount,
+                               @RequestParam("payType")BestPayTypeEnum bestPayTypeEnum) {
+        PayResponse response = payService.create(orderId, amount, bestPayTypeEnum);
         //将codeurl存到map里，并且传到视图create.ftl
-        Map map = new HashMap<>();
-        map.put("codeUrl", response.getCodeUrl());
-        return new ModelAndView("create", map);
+        Map<String, String> map = new HashMap<>();
 
+        //The rendering logic or UI view varies based on the selected payment method.
+        //WXPAY_NATIVE use codeUrl, ALIPAY_PC use body
+        if (bestPayTypeEnum == BestPayTypeEnum.WXPAY_NATIVE) {
+            map.put("codeUrl", response.getCodeUrl());
+            return new ModelAndView("createForWxpay", map);
+        }else if (bestPayTypeEnum == BestPayTypeEnum.ALIPAY_PC) {
+            map.put("body", response.getBody());
+            return new ModelAndView("createForAlipay", map);
+        }
+
+        throw new RuntimeException("Unknow pay type");
     }
     @PostMapping("/notify")
     @ResponseBody

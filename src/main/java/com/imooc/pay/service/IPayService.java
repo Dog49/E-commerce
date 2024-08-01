@@ -1,6 +1,7 @@
 package com.imooc.pay.service;
 
 
+import com.lly835.bestpay.enums.BestPayTypeEnum;
 import org.springframework.stereotype.Service;
 import com.lly835.bestpay.model.PayResponse;
 
@@ -11,7 +12,13 @@ public interface IPayService {
     /*
      * Create a new pay order
      */
-    PayResponse create (String orderId, BigDecimal amount);
+
+
+    /* 创建支付订单 Create Pay Order
+     * @param orderId
+     * @param amount
+     */
+    PayResponse create (String orderId, BigDecimal amount, BestPayTypeEnum bestPayTypeEnum);
 
     /*
     * Async Notify
