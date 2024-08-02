@@ -1,8 +1,12 @@
 package com.imooc.pay.service.impl;
 
+import com.imooc.pay.dao.PayInfoMapper;
+import com.imooc.pay.enums.PayPlatformEnum;
+import com.imooc.pay.pojo.PayInfo;
 import com.imooc.pay.service.IPayService;
 import com.lly835.bestpay.enums.BestPayPlatformEnum;
 import com.lly835.bestpay.enums.BestPayTypeEnum;
+import com.lly835.bestpay.enums.OrderStatusEnum;
 import com.lly835.bestpay.model.PayRequest;
 import com.lly835.bestpay.model.PayResponse;
 import com.lly835.bestpay.service.BestPayService;
@@ -20,15 +24,24 @@ public class PayService implements IPayService {
     @Autowired
     private BestPayService bestPayService;
 
+    @Autowired
+    private PayInfoMapper payInfoMapper;
+
     /* 创建支付订单 Create Pay Order
      * @param orderId
      * @param amount
      */
     @Override
     public PayResponse create(String orderId, BigDecimal amount, BestPayTypeEnum bestPayTypeEnum) {
-
-
         //写入数据库
+        PayInfo payInfo = new PayInfo(Long.parseLong(orderId),
+                                    PayPlatformEnum.getByBestPayTypeEnum(bestPayTypeEnum).getCode(),
+                                    OrderStatusEnum.NOTPAY.name(),
+                                    amount);
+
+        //Use insertSelective instead of insert because the info we import lack of other information such as id
+        payInfoMapper.insertSelective(payInfo);
+
         PayRequest request = new PayRequest();
         request.setOrderName("11528905-最好的支付sdk");
         request.setOrderId(orderId);
