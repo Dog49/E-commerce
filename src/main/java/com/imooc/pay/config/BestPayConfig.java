@@ -12,13 +12,7 @@ import org.springframework.stereotype.Component;
 public class BestPayConfig {
 
     @Bean
-    public BestPayService bestPayService() {
-        WxPayConfig wxPayConfig = new WxPayConfig();
-        wxPayConfig.setAppId("wxd898fcb01713c658");
-        wxPayConfig.setMchId("1483469312");
-        wxPayConfig.setMchKey("7mdApPMfXddfWWbbP4DUaVYm2wjyh3v3");
-
-        wxPayConfig.setNotifyUrl("http://dog49.natapp1.cc/pay/notify");
+    public BestPayService bestPayService(WxPayConfig wxPayConfig) {
 
         AliPayConfig aliPayConfig = new AliPayConfig();
         aliPayConfig.setAppId("2018062960540016");
@@ -31,6 +25,19 @@ public class BestPayConfig {
         bestPayService.setWxPayConfig(wxPayConfig);
         bestPayService.setAliPayConfig(aliPayConfig);
         return bestPayService;
+    }
+
+    @Bean
+    public WxPayConfig wxPayConfig(){
+        WxPayConfig wxPayConfig = new WxPayConfig();
+        wxPayConfig.setAppId("wxd898fcb01713c658");
+        wxPayConfig.setMchId("1483469312");
+        wxPayConfig.setMchKey("7mdApPMfXddfWWbbP4DUaVYm2wjyh3v3");
+
+        wxPayConfig.setNotifyUrl("http://dog49.natapp1.cc/pay/notify");
+        wxPayConfig.setReturnUrl("http://127.0.0.1");
+
+        return wxPayConfig;
     }
 
 }
