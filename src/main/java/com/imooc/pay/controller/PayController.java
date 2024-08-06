@@ -1,5 +1,8 @@
 package com.imooc.pay.controller;
 
+import com.imooc.pay.dao.PayInfoMapper;
+import com.imooc.pay.enums.PayPlatformEnum;
+import com.imooc.pay.pojo.PayInfo;
 import com.imooc.pay.service.impl.PayService;
 import com.lly835.bestpay.enums.BestPayTypeEnum;
 import com.lly835.bestpay.model.PayResponse;
@@ -31,7 +34,7 @@ public class PayController {
 
         //The rendering logic or UI view varies based on the selected payment method.
         //WXPAY_NATIVE use codeUrl, ALIPAY_PC use body
-        if (bestPayTypeEnum == BestPayTypeEnum.WXPAY_NATIVE) {
+        if (bestPayTypeEnum == BestPayTypeEnum.WXPAY_NATIVE ) {
             map.put("codeUrl", response.getCodeUrl());
             return new ModelAndView("createForWxpay", map);
         }else if (bestPayTypeEnum == BestPayTypeEnum.ALIPAY_PC) {
@@ -47,4 +50,11 @@ public class PayController {
 //        receive the notification from alipay like pay completed
         return payService.asyncNotify(notifyData);
     }
+
+    @GetMapping("/queryByOrderId")
+    @ResponseBody
+    public PayInfo queryByOrderId(@RequestParam String orderId) {
+        return payService.queryByOrderId(orderId);
+    }
+
 }

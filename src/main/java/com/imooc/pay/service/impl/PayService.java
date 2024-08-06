@@ -50,7 +50,7 @@ public class PayService implements IPayService {
 
 
         PayResponse response = bestPayService.pay(request);
-        log.info("response={}", response);
+        log.info("Initiate Payment response={}", response);
 
         return response;
 
@@ -63,13 +63,28 @@ public class PayService implements IPayService {
     public String asyncNotify(String notifyData) {
         //1. 签名校验
         PayResponse payResponse = bestPayService.asyncNotify(notifyData);
-        log.info("payResponse={}", payResponse);
+        log.info("Async Notify payResponse={}", payResponse);
 
-        //2.金额校验（从数据库查订单）
+        //2.金额校验（Search order from database）
+        //Send alert through message when Serious situation
+        PayInfo payInfo = payInfoMapper.selectByOrderNo(Long.parseLong(payResponse.getOrderId()));
+        if (payInfo == null) {
+            throw new RuntimeException("PayInfo not exist");
+        }
+        //if the order status is not "Success"
+        if (!OrderStatusEnum.SUCCESS.name().equals(payInfo.getPlatformStatus())) {
+            if(payInfo.getPayAmount().compareTo(BigDecimal.valueOf(payResponse.getOrderAmount())) != 0) {
+                throw new RuntimeException("The amount is not correct between async notify and database, orderNo=" + payInfo.getOrderNo());
+            }
 
-        //3. 修改订单支付状态
+            //3. 修改订单支付状态
+            payInfo.setPlatformStatus(OrderStatusEnum.SUCCESS.name());
+            payInfo.setPlatformNumber(payResponse.getOutTradeNo());
+            payInfo.setUpdateTime(null);
+            payInfoMapper.updateByPrimaryKeySelective(payInfo);
+        }
 
-        //4.告诉微信不要再通知了
+        //4.If Paid, tell the pay platform that do not send the notification again
         if (payResponse.getPayPlatformEnum() == BestPayPlatformEnum.WX) {
             return "<xml>\n" +
                     "  <return_code><![CDATA[SUCCESS]]></return_code>\n" +
@@ -80,4 +95,11 @@ public class PayService implements IPayService {
         }
         throw new RuntimeException("Unknown pay platform in async notify");
     }
+
+    @Override
+    public PayInfo queryByOrderId(String orderId) {
+        return payInfoMapper.selectByOrderNo(Long.parseLong(orderId));
+    }
+
+
 }
