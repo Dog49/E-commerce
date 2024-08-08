@@ -84,6 +84,8 @@ public class PayService implements IPayService {
             payInfoMapper.updateByPrimaryKeySelective(payInfo);
         }
 
+        //TODO pay发送MQ消息，mall接受MQ消息
+
         //4.If Paid, tell the pay platform that do not send the notification again
         if (payResponse.getPayPlatformEnum() == BestPayPlatformEnum.WX) {
             return "<xml>\n" +

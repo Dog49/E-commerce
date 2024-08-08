@@ -34,6 +34,7 @@
                     },
                     error: function (result) {
                         alert(result)
+
                     }
                 })
             }, 2000)
