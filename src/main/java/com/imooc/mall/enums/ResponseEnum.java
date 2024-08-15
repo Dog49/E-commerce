@@ -11,7 +11,7 @@ public enum ResponseEnum {
     PASSWORD_ERROR(1, "WRONG_PASSWORD"),
     USER_EXIST(2, "USER_EXIST"),
     NEED_LOGIN(10, "PLEAST LOGIN FIRST"),
-
+    PARAM_ERROR(3, "PARAM_ERROR")
     ;
 
     Integer code;
