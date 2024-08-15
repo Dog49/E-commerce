@@ -161,6 +161,6 @@
     select
       count(1)
     from mall_user
-    where username = #{email, jdbcType=VARCHAR}
+    where email = #{email, jdbcType=VARCHAR}
   </select>
 </mapper>
