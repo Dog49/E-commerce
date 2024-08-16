@@ -8,9 +8,10 @@ public interface IUserService {
     /*
     * Register
     * */
-    ResponseVo register(User user);
+    ResponseVo<User> register(User user);
 
     /*
     * Login
     * */
+    ResponseVo<User> login(String username, String password);
 }

@@ -1,7 +1,6 @@
 package com.imooc.mall.vo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.imooc.mall.enums.ResponseEnum;
 import lombok.Data;
 import org.springframework.validation.BindingResult;
@@ -17,9 +16,22 @@ public class ResponseVo<T> {
 
     private T data;
 
-    public ResponseVo(Integer status, String msg) {
+    private ResponseVo(Integer status, String msg) {
         this.status = status;
         this.msg = msg;
+    }
+
+    private ResponseVo(Integer status, T data) {
+        this.status = status;
+        this.data = data;
+    }
+
+    public static <T> ResponseVo<T> successByMsg(String msg) {
+        return new ResponseVo<>(ResponseEnum.SUCCESS.getCode(), msg);
+    }
+
+    public static <T> ResponseVo<T> success(T data) {
+        return new ResponseVo<>(ResponseEnum.SUCCESS.getCode(), data);
     }
 
     public static <T> ResponseVo<T> success() {

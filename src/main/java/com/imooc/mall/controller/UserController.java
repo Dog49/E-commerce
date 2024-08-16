@@ -2,31 +2,36 @@ package com.imooc.mall.controller;
 
 
 
+import com.imooc.mall.consts.MallConst;
+import com.imooc.mall.enums.ResponseEnum;
 import com.imooc.mall.pojo.User;
 import com.imooc.mall.service.IUserService;
 import com.imooc.mall.vo.ResponseVo;
-import form.UserForm;
+import form.UserLoginForm;
+import form.UserRegisterForm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.Objects;
-import static com.imooc.mall.enums.ResponseEnum.NEED_LOGIN;
+
 import static com.imooc.mall.enums.ResponseEnum.PARAM_ERROR;
 
 
 @RestController
-@RequestMapping(value = "/user")
 @Slf4j
 public class UserController {
 
     @Autowired
     private IUserService userService;
 
-    @PostMapping("/register")
-    public ResponseVo register(@Valid @RequestBody UserForm userForm, BindingResult bindingResult){
+    @PostMapping("/user/register")
+    public ResponseVo<User> register(@Valid @RequestBody UserRegisterForm userRegisterForm, BindingResult bindingResult){
       if (bindingResult.hasErrors()){
             log.error("Register Error,{} {}"
                     , Objects.requireNonNull(bindingResult.getFieldError()).getField()
@@ -37,8 +42,35 @@ public class UserController {
         }
 
         User user = new User();
-        BeanUtils.copyProperties(userForm, user);
+        BeanUtils.copyProperties(userRegisterForm, user);
 
         return userService.register(user);
+    }
+
+    @PostMapping("/user/login")
+    public ResponseVo<User> login(@Valid @RequestBody UserLoginForm userLoginForm,
+                                  BindingResult bindingResult,
+                                  HttpServletRequest httpServletRequest) {
+        if (bindingResult.hasErrors()){
+
+            return ResponseVo.error(PARAM_ERROR, bindingResult);
+        }
+
+        ResponseVo<User> userResponseVo = userService.login(userLoginForm.getUsername(), userLoginForm.getPassword());
+
+        //Set session
+        HttpSession session = httpServletRequest.getSession();
+        session.setAttribute("currentUser", userResponseVo.getData());
+
+        return userResponseVo;
+    }
+
+    @GetMapping("/user")
+    public ResponseVo<User> userInfo(HttpServletRequest httpServletRequest){
+        User user = (User) httpServletRequest.getSession().getAttribute(MallConst.CURRENT_USER);
+        if (user == null) {
+            return ResponseVo.error(ResponseEnum.NEED_LOGIN);
+        }
+        return ResponseVo.success(user);
     }
 }

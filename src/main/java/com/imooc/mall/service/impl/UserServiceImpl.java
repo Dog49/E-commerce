@@ -25,7 +25,7 @@ public class UserServiceImpl implements IUserService {
     * @param user
     * */
     @Override
-    public ResponseVo register(User user) {
+    public ResponseVo<User> register(User user) {
         error();
 
         //username should be unique
@@ -52,9 +52,27 @@ public class UserServiceImpl implements IUserService {
     }
 
     /*
-    * Login
-    *
-    * */
+     * Login
+     *
+     * */
+    @Override
+    public ResponseVo<User> login(String username, String password) {
+        User user = userMapper.selectByUsername(username);
+        if(user == null){
+            //user does not exist (unsafe), do not let user know the exact reason
+            return ResponseVo.error(USERNAME_OR_PASSWORD_ERROR);
+        }
+        if(!user.getPassword().equalsIgnoreCase(
+                DigestUtils.md5DigestAsHex(password.getBytes(StandardCharsets.UTF_8)))) {
+            //password is wrong
+            return ResponseVo.error(USERNAME_OR_PASSWORD_ERROR);
+        }
+
+        user.setPassword(""); //do not return password
+        return ResponseVo.success(user);
+    }
+
+
 
     private void error() {
         throw new RuntimeException("Unknown Error");
