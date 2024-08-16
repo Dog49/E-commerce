@@ -60,14 +60,17 @@ public class UserController {
 
         //Set session
         HttpSession session = httpServletRequest.getSession();
-        session.setAttribute("currentUser", userResponseVo.getData());
+        session.setAttribute(MallConst.CURRENT_USER, userResponseVo.getData());
+        log.info("/login sessionId={}", session.getId());
 
         return userResponseVo;
     }
 
+    //session is saved in memory, token+redis is better
     @GetMapping("/user")
-    public ResponseVo<User> userInfo(HttpServletRequest httpServletRequest){
-        User user = (User) httpServletRequest.getSession().getAttribute(MallConst.CURRENT_USER);
+    public ResponseVo<User> userInfo(HttpSession session){
+        log.info("/user sessionId={}", session.getId());
+        User user = (User) session.getAttribute(MallConst.CURRENT_USER);
         if (user == null) {
             return ResponseVo.error(ResponseEnum.NEED_LOGIN);
         }
