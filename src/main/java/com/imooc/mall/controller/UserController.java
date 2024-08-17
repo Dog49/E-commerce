@@ -71,9 +71,17 @@ public class UserController {
     public ResponseVo<User> userInfo(HttpSession session){
         log.info("/user sessionId={}", session.getId());
         User user = (User) session.getAttribute(MallConst.CURRENT_USER);
-        if (user == null) {
-            return ResponseVo.error(ResponseEnum.NEED_LOGIN);
-        }
         return ResponseVo.success(user);
+    }
+
+    //TODO determine the login status
+    @PostMapping("/user/logout")
+    /*
+    * {@link TomcatServletWebServerFactory} getSessionTimeoutInMinutes
+    * */
+    public ResponseVo logout(HttpSession session){
+        log.info("/user/logout sessionId={}", session.getId());
+        session.removeAttribute(MallConst.CURRENT_USER);
+        return ResponseVo.success();
     }
 }
