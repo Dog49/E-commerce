@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum ResponseEnum {
 
 
-    ERROR(1,"SERVICE ERROR"),
+    ERROR(-1,"SERVICE ERROR"),
     SUCCESS(0,"SUCCESS"),
     PASSWORD_ERROR(1, "WRONG_PASSWORD"),
     USERNAME_EXIST(2, "USERNAME_EXIST"),

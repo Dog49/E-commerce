@@ -26,7 +26,7 @@ public class UserServiceImpl implements IUserService {
     * */
     @Override
     public ResponseVo<User> register(User user) {
-        error();
+//        error();
 
         //username should be unique
         int countByUsername = userMapper.countByUsername(user.getUsername());
@@ -74,7 +74,7 @@ public class UserServiceImpl implements IUserService {
 
 
 
-    private void error() {
-        throw new RuntimeException("Unknown Error");
-    }
+//    private void error() {
+//        throw new RuntimeException("Unknown Error");
+//    }
 }
