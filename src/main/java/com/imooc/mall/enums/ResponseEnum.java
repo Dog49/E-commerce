@@ -15,12 +15,13 @@ public enum ResponseEnum {
     NEED_LOGIN(10, "PLEAST LOGIN FIRST"),
 
     USERNAME_OR_PASSWORD_ERROR(11, "USERNAME OR PASSWORD ERROR"),
-
+    PRODUCT_NOT_EXIST(12, "PRODUCT_NOT_EXIST"),
+    PRODUCT_OFF_SALE_OR_DELETED(13, "PRODUCT_OFF_SALE_OR_DELETED"),
     ;
 
-    Integer code;
+    final Integer code;
 
-    String desc;
+    final String desc;
 
     ResponseEnum(Integer code, String desc) {
         this.code = code;
