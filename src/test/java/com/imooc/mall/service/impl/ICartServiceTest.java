@@ -19,7 +19,7 @@ public class ICartServiceTest extends MallApplicationTests {
     @Test
     public void add() {
         CartAddForm form = new CartAddForm();
-        form.setProductId(27);
+        form.setProductId(28);
         form.setSelected(true);
         cartService.add(1,form);
     }

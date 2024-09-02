@@ -11,8 +11,10 @@ import com.imooc.mall.vo.CartVo;
 import com.imooc.mall.vo.ResponseVo;
 import form.CartAddForm;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 public class CartServiceImpl implements ICartService {
@@ -52,7 +54,19 @@ public class CartServiceImpl implements ICartService {
         //The product data that need to be saved in redis: productId, quantity, selected
         //Other can be read from the database directly when needed for
 //        Cart cart = new Cart(product.getId(), quantity, form.getSelected());
-        stringRedisTemplate.opsForValue().set(String.format(CART_REDIS_KEY_TEMPLE, uid), gson.toJson(new Cart(product.getId(), quantity, form.getSelected())));
+        HashOperations<String, String, String> opsForHash = stringRedisTemplate.opsForHash();
+        String redisKey = String.format(CART_REDIS_KEY_TEMPLE, uid);//key
+        String value = opsForHash.get(redisKey, String.valueOf(product.getId()));//value
+        Cart cart;
+        if(StringUtils.isEmpty(value)){
+            //No such product, add a new one
+            cart = new Cart(product.getId(), quantity, form.getSelected());
+        }else{
+            //There is such a product, quantity + 1;
+            cart = gson.fromJson(value, Cart.class);
+            cart.setQuantity(cart.getQuantity() + quantity);
+        }
+        opsForHash.put(redisKey, String.valueOf(product.getId()), gson.toJson(cart));
 
         return null;
     }
