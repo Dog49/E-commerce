@@ -7,6 +7,7 @@ import com.imooc.mall.enums.ResponseEnum;
 import com.imooc.mall.pojo.Cart;
 import com.imooc.mall.pojo.Product;
 import com.imooc.mall.service.ICartService;
+import com.imooc.mall.vo.CartProductVo;
 import com.imooc.mall.vo.CartVo;
 import com.imooc.mall.vo.ResponseVo;
 import form.CartAddForm;
@@ -15,6 +16,11 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class CartServiceImpl implements ICartService {
@@ -68,6 +74,61 @@ public class CartServiceImpl implements ICartService {
         }
         opsForHash.put(redisKey, String.valueOf(product.getId()), gson.toJson(cart));
 
-        return null;
+        return list(uid);
+    }
+
+    @Override
+    public ResponseVo<CartVo> list(Integer uid) {
+        HashOperations<String, String, String> opsForHash = stringRedisTemplate.opsForHash();
+        String redisKey = String.format(CART_REDIS_KEY_TEMPLE, uid);//key
+        Map<String, String> entries = opsForHash.entries(redisKey);
+
+        CartVo cartVo = new CartVo();
+        List<CartProductVo> cartProductVoList = new ArrayList<>();
+
+        boolean selectAll = true;
+        Integer cartTotalQuantity = 0;
+        BigDecimal cartTotalPrice = BigDecimal.ZERO;
+
+        for (Map.Entry<String, String> entry : entries.entrySet()) {
+            Integer productId = Integer.valueOf(entry.getKey());
+            Cart cart = gson.fromJson(entry.getValue(), Cart.class);
+
+            //TODO Need to be optimized, use in of mysql
+            Product product = productMapper.selectByPrimaryKey(productId);
+            if (product != null) {
+                CartProductVo cartProductVo = new CartProductVo(
+                        product.getId(),
+                        cart.getQuantity(),
+                        product.getName(),
+                        product.getSubtitle(),
+                        product.getMainImage(),
+                        product.getDetail(),
+                        product.getPrice(),
+                        product.getStatus(),
+                        product.getPrice().multiply(BigDecimal.valueOf(cart.getQuantity())),
+                        product.getStock(),
+                        cart.getProductSelected()
+                );
+                cartProductVoList.add(cartProductVo);
+
+                if (!cart.getProductSelected()) {
+                    //If there is a product that is not selected, set the selectAll to false
+                    selectAll = false;
+                }
+
+
+                if(cart.getProductSelected()){
+                    cartTotalPrice = cartTotalPrice.add(cartProductVo.getProductTotalPrice());
+                }
+            }
+
+            cartTotalQuantity += cart.getQuantity();
+        }
+        cartVo.setSelectedAll(selectAll);
+        cartVo.setCartTotalQuantity(cartTotalQuantity);
+        cartVo.getCartTotalPrice();
+        cartVo.setCartProductVoList(cartProductVoList);
+        return ResponseVo.success(cartVo);
     }
 }

@@ -9,4 +9,6 @@ import org.springframework.stereotype.Service;
 public interface ICartService {
 
     ResponseVo<CartVo> add(Integer uid, CartAddForm form);
+
+    ResponseVo<CartVo> list(Integer uid);
 }
