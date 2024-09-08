@@ -11,6 +11,7 @@ import com.imooc.mall.vo.CartProductVo;
 import com.imooc.mall.vo.CartVo;
 import com.imooc.mall.vo.ResponseVo;
 import form.CartAddForm;
+import form.CartUpdateForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -130,5 +131,49 @@ public class CartServiceImpl implements ICartService {
         cartVo.getCartTotalPrice();
         cartVo.setCartProductVoList(cartProductVoList);
         return ResponseVo.success(cartVo);
+    }
+
+    @Override
+    public ResponseVo<CartVo> update(Integer uid, Integer productId, CartUpdateForm form) {
+        //Before updating, search the content firstly
+        HashOperations<String, String, String> opsForHash = stringRedisTemplate.opsForHash();
+        String redisKey = String.format(CART_REDIS_KEY_TEMPLE, uid);//key
+        String value = opsForHash.get(redisKey, String.valueOf(productId));//value
+        Cart cart;
+        if(StringUtils.isEmpty(value)){
+            //No such product, report error
+            return ResponseVo.error(ResponseEnum.CART_PRODUCT_SELECTED_NOT_EXIST);
+        }
+
+        //There is such a product, change the quantity;
+        cart = gson.fromJson(value, Cart.class);
+        if(form.getQuantity() != null && form.getQuantity() >= 0){
+            //Quantity is not null and greater than 0, update the quantity
+            //It should be the quantity in form, not in cart
+            cart.setQuantity(form.getQuantity());
+        }
+        if(form.getSelected() != null) {
+            cart.setProductSelected(form.getSelected());
+        }
+
+        opsForHash.put(redisKey, String.valueOf(productId), gson.toJson(cart));
+
+        return list(uid);
+
+    }
+
+    @Override
+    public ResponseVo<CartVo> delete(Integer uid, Integer productId) {
+        HashOperations<String, String, String> opsForHash = stringRedisTemplate.opsForHash();
+        String redisKey = String.format(CART_REDIS_KEY_TEMPLE, uid);//key
+        String value = opsForHash.get(redisKey, String.valueOf(productId));//value
+        Cart cart;
+        if(StringUtils.isEmpty(value)){
+            //No such product, report error
+            return ResponseVo.error(ResponseEnum.CART_PRODUCT_SELECTED_NOT_EXIST);
+        }
+
+        opsForHash.delete(redisKey, String.valueOf(productId));
+        return list(uid);
     }
 }

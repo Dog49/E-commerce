@@ -7,6 +7,7 @@ import com.imooc.mall.service.ICartService;
 import com.imooc.mall.vo.CartVo;
 import com.imooc.mall.vo.ResponseVo;
 import form.CartAddForm;
+import form.CartUpdateForm;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,5 +41,20 @@ public class ICartServiceTest extends MallApplicationTests {
         ResponseVo<CartVo> list = cartService.list(1);
         log.info("list={}",gson.toJson(list));
 
+    }
+
+    @Test
+    public void update() {
+        CartUpdateForm form = new CartUpdateForm();
+        form.setQuantity(5);
+        form.setSelected(false);
+        ResponseVo<CartVo> responseVo = cartService.update(1,29,form);
+        log.info("list={}",gson.toJson(responseVo));
+    }
+
+    @Test
+    public void delete() {
+        ResponseVo<CartVo> responseVo = cartService.delete(1,28);
+        log.info("result={}",gson.toJson(responseVo));
     }
 }
