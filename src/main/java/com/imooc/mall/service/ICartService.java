@@ -18,4 +18,10 @@ public interface ICartService {
     ResponseVo<CartVo> update(Integer uid, Integer productId, CartUpdateForm form);
 
     ResponseVo<CartVo> delete(Integer uid, Integer productId);
+
+    ResponseVo<CartVo> selectAll(Integer uid);
+
+    ResponseVo<CartVo> unSelectAll(Integer uid);
+
+    ResponseVo<Integer> sum(Integer uid);
 }

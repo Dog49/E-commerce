@@ -176,4 +176,59 @@ public class CartServiceImpl implements ICartService {
         opsForHash.delete(redisKey, String.valueOf(productId));
         return list(uid);
     }
+
+    @Override
+    public ResponseVo<CartVo> selectAll(Integer uid) {
+        HashOperations<String, String, String> opsForHash = stringRedisTemplate.opsForHash();
+        String redisKey = String.format(CART_REDIS_KEY_TEMPLE, uid);//key
+        Map<String, String> entries = opsForHash.entries(redisKey);
+
+
+       for (Cart cart: listForCart(uid)) {
+            cart.setProductSelected(true);
+            opsForHash.put(redisKey, String.valueOf(cart.getProductId()), gson.toJson(cart));
+       }
+       return list(uid);
+    }
+
+    @Override
+    public ResponseVo<CartVo> unSelectAll(Integer uid) {
+        HashOperations<String, String, String> opsForHash = stringRedisTemplate.opsForHash();
+        String redisKey = String.format(CART_REDIS_KEY_TEMPLE, uid);//key
+        Map<String, String> entries = opsForHash.entries(redisKey);
+
+        for(Cart cart:listForCart(uid)) {
+            cart.setProductSelected(false);
+            opsForHash.put(redisKey, String.valueOf(cart.getProductId()), gson.toJson(cart));
+        };
+
+        return list(uid);
+    }
+
+    @Override
+    public ResponseVo<Integer> sum(Integer uid) {
+        Integer sum = listForCart(uid).stream()
+                .map(Cart::getQuantity)
+                .reduce(0, Integer::sum);
+        return ResponseVo.success(sum);
+    }
+
+    private List<Cart> listForCart(Integer uid) {
+        // Create a HashOperation object that allows us to perform operations on hash data stored in Redis.
+        HashOperations<String, String, String> opsForHash = stringRedisTemplate.opsForHash();
+        // Create a key for the Redis hash, which is placeholder for the user ID.
+        String redisKey = String.format(CART_REDIS_KEY_TEMPLE, uid);//key
+        // Get all entries from the Redis hash. Each entry is a key-value pair, where the key is the product ID and the value is the JSON string representation of the Cart object.
+        Map<String, String> entries = opsForHash.entries(redisKey);
+
+        //Create a new ArrayList object to strore the shopping carts.
+        List<Cart> cartList = new ArrayList<>();
+        for(Map.Entry<String, String> entry : entries.entrySet()){//Starts a for-each loop to iterate through the entries in the entries Map.
+            //Covert the JSON string to a Cart object using the Gson library.
+            cartList.add(gson.fromJson(entry.getValue(), Cart.class));
+        }
+
+        return cartList;
+
+    }
 }
