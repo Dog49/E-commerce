@@ -19,7 +19,7 @@ import javax.validation.Valid;
 public class CartController {
 
     //TODO Try testing in Postman
-    @Qualifier("ICartService")
+
     @Autowired
     private ICartService cartService;
 
