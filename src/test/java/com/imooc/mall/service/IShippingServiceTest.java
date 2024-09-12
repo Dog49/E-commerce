@@ -6,6 +6,7 @@ import com.imooc.mall.vo.ResponseVo;
 import form.ShippingForm;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -22,12 +23,15 @@ public class IShippingServiceTest extends MallApplicationTests {
     @Autowired
     private IShippingService shippingService;
 
-    private Integer uid = 1;
+    private final Integer uid = 1;
 
+    private final Integer shippingId = 11;
 
-    @Test
-    public void add() {
-        ShippingForm form = new ShippingForm();
+    private ShippingForm form;
+
+    @Before
+    public void before() {
+        form = new ShippingForm();
         form.setReceiverName("张三");
         form.setReceiverPhone("010123457");
         form.setReceiverMobile("13539010637");
@@ -36,6 +40,11 @@ public class IShippingServiceTest extends MallApplicationTests {
         form.setReceiverDistrict("东城区");
         form.setReceiverAddress("东城街道");;
         form.setReceiverZip("523000");
+    }
+
+
+    @Test
+    public void add() {
         ResponseVo<Map<String, Integer>> responseVo = shippingService.add(uid, form);
         log.info("result={}", responseVo);
         Assert.assertEquals(ResponseEnum.SUCCESS.getCode(), responseVo.getStatus());
@@ -43,13 +52,22 @@ public class IShippingServiceTest extends MallApplicationTests {
 
     @Test
     public void delete() {
+
+        ResponseVo responseVo = shippingService.delete(uid, shippingId);
+        log.info("result={}", responseVo);
+        Assert.assertEquals(ResponseEnum.SUCCESS.getCode(), responseVo.getStatus());
     }
 
     @Test
     public void update() {
+        form.setReceiverCity("广州市");
+        ResponseVo responseVo = shippingService.update(uid, shippingId, form);
+        log.info("result={}", responseVo);
+        Assert.assertEquals(ResponseEnum.SUCCESS.getCode(), responseVo.getStatus());
     }
 
     @Test
     public void list() {
+
     }
 }
