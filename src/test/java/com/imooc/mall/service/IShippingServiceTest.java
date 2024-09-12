@@ -5,6 +5,7 @@ import com.imooc.mall.enums.ResponseEnum;
 import com.imooc.mall.vo.ResponseVo;
 import form.ShippingForm;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,9 +24,9 @@ public class IShippingServiceTest extends MallApplicationTests {
     @Autowired
     private IShippingService shippingService;
 
-    private final Integer uid = 1;
+    private Integer uid = 1;
 
-    private final Integer shippingId = 11;
+    private Integer shippingId;
 
     private ShippingForm form;
 
@@ -38,19 +39,21 @@ public class IShippingServiceTest extends MallApplicationTests {
         form.setReceiverProvince("广东");
         form.setReceiverCity("东莞");
         form.setReceiverDistrict("东城区");
-        form.setReceiverAddress("东城街道");;
+        form.setReceiverAddress("东城街道");
         form.setReceiverZip("523000");
+
+        add();
     }
 
 
-    @Test
     public void add() {
         ResponseVo<Map<String, Integer>> responseVo = shippingService.add(uid, form);
         log.info("result={}", responseVo);
+        this.shippingId = responseVo.getData().get("shippingId");
         Assert.assertEquals(ResponseEnum.SUCCESS.getCode(), responseVo.getStatus());
     }
 
-    @Test
+    @After
     public void delete() {
 
         ResponseVo responseVo = shippingService.delete(uid, shippingId);
@@ -68,6 +71,8 @@ public class IShippingServiceTest extends MallApplicationTests {
 
     @Test
     public void list() {
-
+        ResponseVo list = shippingService.list(uid, 1, 10);
+        log.info("result={}", list);
+        Assert.assertEquals(ResponseEnum.SUCCESS.getCode(), list.getStatus());
     }
 }
