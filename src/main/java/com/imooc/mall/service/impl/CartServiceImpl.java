@@ -213,7 +213,7 @@ public class CartServiceImpl implements ICartService {
         return ResponseVo.success(sum);
     }
 
-    private List<Cart> listForCart(Integer uid) {
+    public List<Cart> listForCart(Integer uid) {
         // Create a HashOperation object that allows us to perform operations on hash data stored in Redis.
         HashOperations<String, String, String> opsForHash = stringRedisTemplate.opsForHash();
         // Create a key for the Redis hash, which is placeholder for the user ID.

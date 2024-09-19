@@ -1,5 +1,6 @@
 package com.imooc.mall.service;
 
+import com.imooc.mall.pojo.Cart;
 import com.imooc.mall.vo.CartVo;
 import com.imooc.mall.vo.ResponseVo;
 import form.CartAddForm;
@@ -7,6 +8,7 @@ import form.CartUpdateForm;
 import org.springframework.stereotype.Service;
 
 import javax.xml.ws.Response;
+import java.util.List;
 
 @Service
 public interface ICartService {
@@ -24,4 +26,6 @@ public interface ICartService {
     ResponseVo<CartVo> unSelectAll(Integer uid);
 
     ResponseVo<Integer> sum(Integer uid);
+
+    List<Cart> listForCart(Integer uid);
 }
