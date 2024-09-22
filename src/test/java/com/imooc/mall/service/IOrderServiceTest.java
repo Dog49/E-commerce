@@ -18,7 +18,7 @@ public class IOrderServiceTest extends MallApplicationTests {
 
     private Integer uid = 1;
 
-    private Integer shippingId = 4;
+    private Integer shippingId = 18;
     @Test
     public void create() {
         ResponseVo<OrderVo> responseVo = orderService.create(uid, shippingId);

@@ -2,8 +2,10 @@ package com.imooc.mall.service.impl;
 
 import com.imooc.mall.dao.ProductMapper;
 import com.imooc.mall.dao.ShippingMapper;
+import com.imooc.mall.enums.ProductStatusEnum;
 import com.imooc.mall.enums.ResponseEnum;
 import com.imooc.mall.pojo.Cart;
+import com.imooc.mall.pojo.OrderItem;
 import com.imooc.mall.pojo.Product;
 import com.imooc.mall.pojo.Shipping;
 import com.imooc.mall.service.ICartService;
@@ -14,9 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -61,13 +62,21 @@ public class OrderServiceImpl implements IOrderService {
             Product product = map.get(cart.getProductId());
             //Check if the product exist
             if(product == null) {
-                return ResponseVo.error(ResponseEnum.PRODUCT_NOT_EXIST, "Product " + cart.getProductId() + " does not exist");
+                return ResponseVo.error(ResponseEnum.PRODUCT_NOT_EXIST, "Product: " + cart.getProductId() + " does not exist");
             }
-            //Check if the stock is enough
-            if(product.getStock() < cart.getQuantity()) {
-                return ResponseVo.error(ResponseEnum.PRODUCT_STOCK_NOT_ENOUGH, "Product " + product.getName() + " stock is not enough");
+            //Check the status of product
+            if(ProductStatusEnum.ON_SALE.getCode().equals(product.getStatus())) {
+                return ResponseVo.error(ResponseEnum.PRODUCT_OFF_SALE_OR_DELETED, "Product: " + product.getName() + " is not on sale");
             }
 
+            //Check if the stock is enough
+            if(product.getStock() < cart.getQuantity()) {
+                return ResponseVo.error(ResponseEnum.PRODUCT_STOCK_NOT_ENOUGH, "Product: " + product.getName() + " stock is not enough");
+            }
+
+            //Because the data in Order can be gotten from orderItem, so use this function to get the data
+            Long orderNo = generateOrderNo();
+            buildOrderItem(uid, orderNo, cart.getQuantity(), product);
         }
 
 
@@ -82,4 +91,26 @@ public class OrderServiceImpl implements IOrderService {
         //Construct orderVo
         return null;
         }
+
+        /*
+        * 企业级：分布式唯一id
+        * @return
+        * TODO: Need to improve
+        * */
+    private Long generateOrderNo() {
+        return System.currentTimeMillis() + new Random().nextInt(999);
+    }
+
+    private OrderItem buildOrderItem(Integer uid, Long orderNo, Integer quantity, Product product) {
+        OrderItem item = new OrderItem();
+        item.setUserId(uid);
+        item.setOrderNo(orderNo);
+        item.setProductId(product.getId());
+        item.setProductName(product.getName());
+        item.setProductImage(product.getMainImage());
+        item.setCurrentUnitPrice(product.getPrice());
+        item.setQuantity(quantity);
+        item.setTotalPrice(product.getPrice().multiply(new BigDecimal(quantity)));
+        return item;
+    }
 }
