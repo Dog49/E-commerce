@@ -1,13 +1,14 @@
 package com.imooc.mall.service.impl;
 
+import com.imooc.mall.dao.OrderItemMapper;
+import com.imooc.mall.dao.OrderMapper;
 import com.imooc.mall.dao.ProductMapper;
 import com.imooc.mall.dao.ShippingMapper;
+import com.imooc.mall.enums.OrderStatusEnum;
+import com.imooc.mall.enums.PaymentTypeEnum;
 import com.imooc.mall.enums.ProductStatusEnum;
 import com.imooc.mall.enums.ResponseEnum;
-import com.imooc.mall.pojo.Cart;
-import com.imooc.mall.pojo.OrderItem;
-import com.imooc.mall.pojo.Product;
-import com.imooc.mall.pojo.Shipping;
+import com.imooc.mall.pojo.*;
 import com.imooc.mall.service.ICartService;
 import com.imooc.mall.service.IOrderService;
 import com.imooc.mall.vo.OrderVo;
@@ -33,6 +34,12 @@ public class OrderServiceImpl implements IOrderService {
     @Autowired
     private ProductMapper productMapper;
 
+    @Autowired
+    private OrderItemMapper orderItemMapper;
+
+    @Autowired
+    private OrderMapper orderMapper;
+
     @Override
     public ResponseVo<OrderVo> create(Integer uid, Integer shippingId) {
         //Shipping address validation
@@ -56,7 +63,8 @@ public class OrderServiceImpl implements IOrderService {
         List<Product> productList = productMapper.selectByProductIdSet(productIdSet);
         Map<Integer, Product> map = productList.stream()
                 .collect(Collectors.toMap(Product::getId, product -> product)); //key: productId, value: product
-
+        List<OrderItem> orderItemList = new ArrayList<>();
+        Long orderNo = generateOrderNo();
         for(Cart cart : cartList) {
             //Check database by productId
             Product product = map.get(cart.getProductId());
@@ -75,14 +83,22 @@ public class OrderServiceImpl implements IOrderService {
             }
 
             //Because the data in Order can be gotten from orderItem, so use this function to get the data
-            Long orderNo = generateOrderNo();
-            buildOrderItem(uid, orderNo, cart.getQuantity(), product);
+
+            OrderItem orderItem = buildOrderItem(uid, orderNo, cart.getQuantity(), product);
+            orderItemList.add(orderItem);
         }
 
 
         //Calculate total price
 
         //Generate order and orderItem
+        Order order = buildOrder(uid, orderNo, shippingId, orderItemList);
+        //Save order and orderItem into database
+        int row = orderMapper.insertSelective(order);
+        if(row <= 0) {
+            return ResponseVo.error(ResponseEnum.ERROR);
+        }
+
 
         //Reduce product stock
 
@@ -91,6 +107,27 @@ public class OrderServiceImpl implements IOrderService {
         //Construct orderVo
         return null;
         }
+
+        /*
+        * //TODO: write notes
+        * */
+    private Order buildOrder(Integer uid, Long orderNo, Integer shippingId, List<OrderItem> orderItemList) {
+        BigDecimal payment = orderItemList.stream().
+                map(OrderItem::getTotalPrice).
+                reduce(BigDecimal.ZERO, BigDecimal::add);
+        Order order = new Order();
+        order.setOrderNo(orderNo);
+        order.setUserId(uid);
+        order.setShippingId(shippingId);
+        order.setPayment(payment);
+        order.setPostage(0);
+        order.setStatus(OrderStatusEnum.NO_PAY.getCode());
+        order.setPaymentType(PaymentTypeEnum.PAY_ONLINE.getCode());
+
+        order.setCreateTime(new Date());
+        order.setUpdateTime(new Date());
+        return order;
+    }
 
         /*
         * 企业级：分布式唯一id
