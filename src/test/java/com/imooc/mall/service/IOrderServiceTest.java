@@ -18,11 +18,11 @@ public class IOrderServiceTest extends MallApplicationTests {
 
     private Integer uid = 1;
 
-    private Integer shippingId = 18;
+    private Integer shippingId = 4;
     @Test
     public void create() {
         ResponseVo<OrderVo> responseVo = orderService.create(uid, shippingId);
-        log.info("responseVo={}", responseVo);
+        log.info("result={}", responseVo);
         Assert.assertEquals(ResponseEnum.SUCCESS.getCode(), responseVo.getStatus());
     }
 }

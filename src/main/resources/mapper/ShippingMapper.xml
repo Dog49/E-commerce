@@ -177,7 +177,9 @@
     select
     <include refid="Base_Column_List" />
     from mall_shipping
-    where id = #{shippingId,jdbcType=INTEGER}
+    <where>
+     id = #{shippingId,jdbcType=INTEGER}
     and user_id = #{uid,jdbcType=INTEGER}
+    </where>
   </select>
 </mapper>

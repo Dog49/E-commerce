@@ -15,6 +15,7 @@ import com.imooc.mall.vo.OrderVo;
 import com.imooc.mall.vo.ResponseVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
@@ -41,6 +42,7 @@ public class OrderServiceImpl implements IOrderService {
     private OrderMapper orderMapper;
 
     @Override
+    @Transactional//Transactional 的作用 是数据库类型决定的
     public ResponseVo<OrderVo> create(Integer uid, Integer shippingId) {
         //Shipping address validation
         Shipping shipping = shippingMapper.selectByUidAndShippingId(uid, shippingId);
@@ -60,7 +62,9 @@ public class OrderServiceImpl implements IOrderService {
         Set<Integer> productIdSet = cartList.stream()
                     .map(Cart::getProductId)
                     .collect(Collectors.toSet());
+
         List<Product> productList = productMapper.selectByProductIdSet(productIdSet);
+
         Map<Integer, Product> map = productList.stream()
                 .collect(Collectors.toMap(Product::getId, product -> product)); //key: productId, value: product
         List<OrderItem> orderItemList = new ArrayList<>();
@@ -73,7 +77,7 @@ public class OrderServiceImpl implements IOrderService {
                 return ResponseVo.error(ResponseEnum.PRODUCT_NOT_EXIST, "Product: " + cart.getProductId() + " does not exist");
             }
             //Check the status of product
-            if(ProductStatusEnum.ON_SALE.getCode().equals(product.getStatus())) {
+            if(!ProductStatusEnum.ON_SALE.getCode().equals(product.getStatus())) {
                 return ResponseVo.error(ResponseEnum.PRODUCT_OFF_SALE_OR_DELETED, "Product: " + product.getName() + " is not on sale");
             }
 
@@ -94,18 +98,20 @@ public class OrderServiceImpl implements IOrderService {
         //Generate order and orderItem
         Order order = buildOrder(uid, orderNo, shippingId, orderItemList);
         //Save order and orderItem into database
-        int row = orderMapper.insertSelective(order);
-        if(row <= 0) {
+        int rowForOrder = orderMapper.insertSelective(order);
+        if(rowForOrder <= 0) {
             return ResponseVo.error(ResponseEnum.ERROR);
         }
-
-
+        int rowForOrderItem = orderItemMapper.batchInsert(orderItemList);
+        if (rowForOrderItem <= 0) {
+            return ResponseVo.error(ResponseEnum.ERROR);
+        }
         //Reduce product stock
 
         //Update cart(Item Selected)
 
         //Construct orderVo
-        return null;
+        return ResponseVo.success();
         }
 
         /*
@@ -124,8 +130,6 @@ public class OrderServiceImpl implements IOrderService {
         order.setStatus(OrderStatusEnum.NO_PAY.getCode());
         order.setPaymentType(PaymentTypeEnum.PAY_ONLINE.getCode());
 
-        order.setCreateTime(new Date());
-        order.setUpdateTime(new Date());
         return order;
     }
 
