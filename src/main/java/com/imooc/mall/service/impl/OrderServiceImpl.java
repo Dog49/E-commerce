@@ -11,8 +11,10 @@ import com.imooc.mall.enums.ResponseEnum;
 import com.imooc.mall.pojo.*;
 import com.imooc.mall.service.ICartService;
 import com.imooc.mall.service.IOrderService;
+import com.imooc.mall.vo.OrderItemVo;
 import com.imooc.mall.vo.OrderVo;
 import com.imooc.mall.vo.ResponseVo;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,6 +92,13 @@ public class OrderServiceImpl implements IOrderService {
 
             OrderItem orderItem = buildOrderItem(uid, orderNo, cart.getQuantity(), product);
             orderItemList.add(orderItem);
+
+            //Reduce product stock
+            product.setStock(product.getStock() - cart.getQuantity());
+            int row = productMapper.updateByPrimaryKeySelective(product);
+            if(row <= 0) {
+                return ResponseVo.error(ResponseEnum.ERROR);
+            }
         }
 
 
@@ -106,15 +115,40 @@ public class OrderServiceImpl implements IOrderService {
         if (rowForOrderItem <= 0) {
             return ResponseVo.error(ResponseEnum.ERROR);
         }
-        //Reduce product stock
+
+
 
         //Update cart(Item Selected)
-
-        //Construct orderVo
-        return ResponseVo.success();
+        //Redis has transactions (packaged commands), they cannot be rolled back.
+        for(Cart cart : cartList) {
+            cartService.delete(uid, cart.getProductId());
         }
 
-        /*
+        //Construct orderVo
+        OrderVo orderVo = buildOrderVo(order, orderItemList, shipping);
+
+        return ResponseVo.success(orderVo);
+        }
+
+    private OrderVo buildOrderVo(Order order, List<OrderItem> orderItemList, Shipping shipping) {
+        OrderVo orderVo = new OrderVo();
+        BeanUtils.copyProperties(order, orderVo);
+
+        List<OrderItemVo> OrderItemVoList = orderItemList.stream().map(e -> {
+            OrderItemVo orderItemVo = new OrderItemVo();
+            BeanUtils.copyProperties(e, orderItemVo);
+            return orderItemVo;
+        }).collect(Collectors.toList());
+
+        orderVo.setOrderItemVoList(OrderItemVoList);
+
+        orderVo.setShippingId(shipping.getId());
+        orderVo.setShippingVo(shipping);
+
+        return orderVo;
+    }
+
+    /*
         * //TODO: write notes
         * */
     private Order buildOrder(Integer uid, Long orderNo, Integer shippingId, List<OrderItem> orderItemList) {
