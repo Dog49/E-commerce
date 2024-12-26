@@ -175,7 +175,7 @@
       update_time = #{updateTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=INTEGER}
   </update>
-  <select id="selectByCategoryIdSet" resultType="com.imooc.mall.pojo.Product">
+  <select id="selectByCategoryIdSet" resultType="com.imooc.mall.pojo.Product" resultMap="BaseResultMap">
     select
         <include refid="Base_Column_List"/>
         from mall_product
@@ -187,7 +187,7 @@
     </foreach>
     </if>
   </select>
-  <select id="selectByProductIdSet" resultType="com.imooc.mall.pojo.Product">
+  <select id="selectByProductIdSet" resultType="com.imooc.mall.pojo.Product" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List"/>
     from mall_product
