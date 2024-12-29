@@ -188,9 +188,9 @@
     <include refid="Base_Column_List" />
     from mall_shipping
     <where>
-      <if test="orderNoSet.size() > 0">
+      <if test="idSet.size() > 0">
         id in
-        <foreach collection="orderNoSet" item="item" index="index" open="(" separator="," close=")">
+        <foreach collection="idSet" item="item" index="index" open="(" separator="," close=")">
           #{item}
         </foreach>
       </if>

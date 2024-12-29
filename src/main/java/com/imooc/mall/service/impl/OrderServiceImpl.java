@@ -141,20 +141,44 @@ public class OrderServiceImpl implements IOrderService {
                 .map(Order::getOrderNo)
                 .collect(Collectors.toSet());
         List<OrderItem> orderItemList = orderItemMapper.selectByOrderNoSet(orderNoSet);
+        Map<Long, List<OrderItem>> orderItemMap = orderItemList.stream()
+                .collect(Collectors.groupingBy(OrderItem::getOrderNo));
 
         Set<Integer> shippingIdSet = orderList.stream()
                 .map(Order::getShippingId)
                 .collect(Collectors.toSet());
         List<Shipping> shippingList = shippingMapper.selectByIdSet(shippingIdSet);
-        PageInfo pageInfo = new PageInfo(orderList);
-        pageInfo.setList();
+        Map<Integer, Shipping> shippingMap = shippingList.stream()
+                .collect(Collectors.toMap(Shipping::getId, shipping -> shipping));
 
-        return null;
+        List<OrderVo> orderVoList = new ArrayList<>();
+        for (Order order : orderList) {
+            OrderVo orderVo = buildOrderVo(order,
+                    orderItemMap.get(order.getOrderNo()), //如果拿不到就报错
+                    shippingMap.get(order.getShippingId()));
+            orderVoList.add(orderVo);
+        }
+
+        PageInfo pageInfo = new PageInfo(orderList);
+        pageInfo.setList(orderVoList);
+
+        return ResponseVo.success(pageInfo);
     }
 
     @Override
     public ResponseVo<OrderVo> detail(Integer uid, Long orderNo) {
-        return null;
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if(order == null || !order.getUserId().equals(uid)) {
+            return ResponseVo.error(ResponseEnum.ORDER_NOT_EXIST);
+        }
+        Set<Long> orderNoSet = new HashSet<>();
+        orderNoSet.add(order.getOrderNo());
+        List<OrderItem> orderItemList = orderItemMapper.selectByOrderNoSet(orderNoSet);
+
+        Shipping shipping = shippingMapper.selectByPrimaryKey(order.getShippingId());
+
+        OrderVo orderVo = buildOrderVo(order, orderItemList, shipping);
+        return ResponseVo.success(orderVo);
     }
 
     private OrderVo buildOrderVo(Order order, List<OrderItem> orderItemList, Shipping shipping) {
@@ -169,8 +193,10 @@ public class OrderServiceImpl implements IOrderService {
 
         orderVo.setOrderItemVoList(OrderItemVoList);
 
-        orderVo.setShippingId(shipping.getId());
-        orderVo.setShippingVo(shipping);
+        if(shipping != null) {
+            orderVo.setShippingId(shipping.getId());
+            orderVo.setShippingVo(shipping);
+        }
 
         return orderVo;
     }

@@ -18,4 +18,6 @@ public interface OrderMapper {
     int updateByPrimaryKey(Order record);
 
     List<Order> selectByUserId(Integer userId);
+
+    Order selectByOrderNo(Long orderNo); //根据订单号查询订单
 }

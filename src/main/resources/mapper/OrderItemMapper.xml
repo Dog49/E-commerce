@@ -179,7 +179,7 @@
           )
         </foreach>
   </insert>
-  <select id="selectByOrderNoSet" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+  <select id="selectByOrderNoSet" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List" />
     from mall_order_item
